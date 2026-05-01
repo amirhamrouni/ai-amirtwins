@@ -1,0 +1,29 @@
+# GemeenteGPT Local — Docker Compose
+# For later use. App runs with "npm run dev" for now.
+# To use: docker-compose up --build
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/prod.db
+      - MOONSHOT_API_KEY=${MOONSHOT_API_KEY}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - TOKEN_DAILY_LIMIT=${TOKEN_DAILY_LIMIT:-10000}
+      - LOCAL_OCR_ONLY=${LOCAL_OCR_ONLY:-true}
+    volumes:
+      - gemeente_data:/app/data
+      - gemeente_uploads:/app/public/uploads
+    restart: unless-stopped
+
+volumes:
+  gemeente_data:
+  gemeente_uploads:

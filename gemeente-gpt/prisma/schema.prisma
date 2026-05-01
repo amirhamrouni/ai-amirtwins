@@ -1,0 +1,60 @@
+// GemeenteGPT Local — Prisma Schema
+// DB: SQLite (file:./dev.db) for localhost
+// Switch DATABASE_URL to postgres:// for production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  password       String
+  tokenUsedToday Int       @default(0)
+  lastReset      DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  documents      Document[]
+  chatLogs       ChatLog[]
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  userId     String
+  filename   String
+  summary    String
+  tokenCount Int      @default(0)
+  size       Int      @default(0)
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChatLog {
+  id           String   @id @default(cuid())
+  userId       String
+  promptHash   String
+  responseJson String
+  tokens       Int      @default(0)
+  agentUsed    String   @default("general")
+  cached       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([promptHash])
+  @@index([userId])
+}
+
+model Config {
+  id               String  @id @default("singleton")
+  kimiApiKey       String  @default("")
+  tokenDailyLimit  Int     @default(10000)
+  enableAgentSwarm Boolean @default(true)
+  enableLocalOCR   Boolean @default(true)
+  summaryLevel     String  @default("normal")
+  gemeente         String  @default("Amsterdam")
+  updatedAt        DateTime @updatedAt
+}
